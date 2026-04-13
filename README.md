@@ -1,4 +1,4 @@
-# bKash Digital Store
+# Rahat48's Digital Store
 
 A full-stack e-commerce demo integrating the **bKash Tokenized Checkout** payment gateway.
 
