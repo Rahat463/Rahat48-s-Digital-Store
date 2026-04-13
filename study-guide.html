@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bKash Payment Gateway - Interactive Study Guide</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #1a1d27;
+  --bg3: #242836;
+  --accent: #E2136E;
+  --accent2: #ff4d94;
+  --text: #e4e4e7;
+  --text2: #9ca3af;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --orange: #f59e0b;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --border: #2d3348;
+  --code-bg: #1e2130;
+  --sidebar-w: 280px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent), #a80050);
+}
+
+.sidebar-header h2 {
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sidebar-header p {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+.progress-bar-container {
+  margin-top: 12px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.progress-text {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
+
+.nav-section {
+  padding: 8px 0;
+}
+
+.nav-section-title {
+  padding: 8px 20px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text2);
+  font-weight: 700;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  color: var(--text2);
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(226,19,110,0.1); color: var(--accent2); border-left-color: var(--accent); }
+.nav-item.completed .nav-check { color: var(--green); }
+
+.nav-check {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.nav-item.completed .nav-check {
+  border-color: var(--green);
+  background: rgba(34,197,94,0.15);
+}
+
+/* ===== MAIN ===== */
+.main {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: rgba(15,17,23,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.search-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: var(--text);
+  font-size: 0.85rem;
+  width: 260px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-box:focus { border-color: var(--accent); }
+
+.search-results {
+  position: absolute;
+  top: 52px;
+  left: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  width: 400px;
+  display: none;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.search-results.show { display: block; }
+
+.search-result-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.search-result-item:hover { background: var(--bg3); }
+.search-result-item strong { color: var(--accent2); }
+
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.mode-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+/* ===== SECTIONS ===== */
+.section {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.section.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.section h1 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent2), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.section-subtitle {
+  color: var(--text2);
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.section h2 {
+  font-size: 1.25rem;
+  margin: 28px 0 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section h3 {
+  font-size: 1.05rem;
+  margin: 20px 0 8px;
+  color: var(--blue);
+}
+
+.section p, .section li {
+  color: var(--text2);
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+
+.section ul, .section ol {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.section strong { color: var(--text); }
+
+/* ===== SPECIAL BLOCKS ===== */
+.concept-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 16px 0;
+  border-left: 4px solid var(--accent);
+}
+
+.concept-card.green { border-left-color: var(--green); }
+.concept-card.blue { border-left-color: var(--blue); }
+.concept-card.orange { border-left-color: var(--orange); }
+.concept-card.purple { border-left-color: var(--purple); }
+
+.concept-card h4 {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.concept-card p { margin-bottom: 6px; }
+
+.analogy-box {
+  background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(59,130,246,0.1));
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+
+.analogy-box h4 { color: var(--purple); margin-bottom: 8px; }
+
+/* ===== CODE BLOCKS ===== */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  position: relative;
+}
+
+pre code { color: #c9d1d9; font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace; }
+
+.code-label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: white;
+  font-family: sans-serif;
+}
+
+.kw { color: #ff7b72; }
+.str { color: #a5d6ff; }
+.cmt { color: #8b949e; font-style: italic; }
+.fn { color: #d2a8ff; }
+.num { color: #79c0ff; }
+.var { color: #ffa657; }
+.op { color: #ff7b72; }
+.type { color: #79c0ff; }
+
+/* ===== COLLAPSIBLE ===== */
+.collapsible {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.collapsible-header {
+  padding: 14px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.collapsible-header:hover { background: var(--bg3); }
+
+.collapsible-arrow {
+  transition: transform 0.3s;
+  font-size: 0.8rem;
+  color: var(--text2);
+}
+
+.collapsible.open .collapsible-arrow { transform: rotate(90deg); }
+
+.collapsible-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.collapsible.open .collapsible-body { max-height: 3000px; }
+
+.collapsible-content {
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== FLOW DIAGRAM ===== */
+.flow-diagram {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+}
+
+.flow-step {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 24px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.flow-step.highlighted {
+  opacity: 1;
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(226,19,110,0.2);
+  transform: scale(1.02);
+}
+
+.flow-step .step-num {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  line-height: 24px;
+  margin-right: 8px;
+  font-weight: 700;
+}
+
+.flow-step .step-actor {
+  font-size: 0.7rem;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+.flow-arrow {
+  color: var(--accent);
+  font-size: 1.2rem;
+  padding: 4px 0;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+
+.flow-arrow.highlighted { opacity: 1; }
+
+.flow-controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.flow-btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.flow-btn:hover { border-color: var(--accent); }
+.flow-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+
+.flow-detail {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  min-height: 60px;
+  border-left: 3px solid var(--accent);
+}
+
+/* ===== TABLES ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.85rem;
+}
+
+th {
+  background: var(--bg3);
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.8rem;
+}
+
+td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+}
+
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.82rem;
+  color: var(--accent2);
+}
+
+/* ===== QUIZ ===== */
+.quiz-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px 0;
+}
+
+.quiz-question {
+  font-weight: 600;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+
+.quiz-option {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.quiz-option:hover { border-color: var(--accent); background: rgba(226,19,110,0.05); }
+.quiz-option.correct { border-color: var(--green); background: rgba(34,197,94,0.1); color: var(--green); }
+.quiz-option.wrong { border-color: var(--red); background: rgba(239,68,68,0.1); color: var(--red); }
+.quiz-option.disabled { pointer-events: none; }
+
+.quiz-explanation {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: none;
+  border-left: 3px solid var(--green);
+}
+
+.quiz-explanation.show { display: block; }
+
+.quiz-score {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* ===== FLASHCARD ===== */
+.flashcard-container {
+  perspective: 1000px;
+  margin: 16px 0;
+}
+
+.flashcard {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-height: 180px;
+  cursor: pointer;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.flashcard.flipped { transform: rotateY(180deg); }
+
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.flashcard-front {
+  background: linear-gradient(135deg, var(--bg2), var(--bg3));
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.flashcard-back {
+  background: linear-gradient(135deg, rgba(226,19,110,0.1), rgba(168,85,247,0.1));
+  transform: rotateY(180deg);
+  font-size: 0.9rem;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.flashcard-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.flashcard-counter {
+  font-size: 0.8rem;
+  color: var(--text2);
+}
+
+/* ===== TABS ===== */
+.tabs {
+  margin: 16px 0;
+}
+
+.tab-headers {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  gap: 0;
+}
+
+.tab-header {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-header:hover { color: var(--text); }
+.tab-header.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+.tab-content { display: none; padding-top: 4px; }
+.tab-content.active { display: block; }
+
+/* ===== SECTION COMPLETE ===== */
+.section-complete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 40px;
+  padding: 14px 32px;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.section-complete-btn:hover { filter: brightness(1.1); }
+.section-complete-btn.done { background: var(--bg3); color: var(--green); cursor: default; }
+
+/* ===== COMPARE BLOCKS ===== */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.compare-bad {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.compare-good {
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.compare-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.compare-bad .compare-label { color: var(--red); }
+.compare-good .compare-label { color: var(--green); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .hamburger { display: block; }
+  .search-box { width: 160px; }
+  .compare { grid-template-columns: 1fr; }
+  .topbar { padding: 12px 16px; }
+  .content { padding: 20px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>bKash Payment Gateway</h2>
+    <p>Interactive Study Guide</p>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText">0 / 13 sections completed</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Project Overview</div>
+    <div class="nav-item active" data-section="overview">
+      <div class="nav-check"></div> Project README
+    </div>
+    <div class="nav-item" data-section="bigpicture">
+      <div class="nav-check"></div> The Big Picture
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Tech & Architecture</div>
+    <div class="nav-item" data-section="techstack">
+      <div class="nav-check"></div> Tech Stack
+    </div>
+    <div class="nav-item" data-section="architecture">
+      <div class="nav-check"></div> Backend Architecture
+    </div>
+    <div class="nav-item" data-section="database">
+      <div class="nav-check"></div> Database Design
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Payment Gateway</div>
+    <div class="nav-item" data-section="gateway">
+      <div class="nav-check"></div> Core Concepts
+    </div>
+    <div class="nav-item" data-section="bkashapi">
+      <div class="nav-check"></div> bKash API Step by Step
+    </div>
+    <div class="nav-item" data-section="codewalkt">
+      <div class="nav-check"></div> Backend Code Walkthrough
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Advanced</div>
+    <div class="nav-item" data-section="security">
+      <div class="nav-check"></div> Security
+    </div>
+    <div class="nav-item" data-section="errors">
+      <div class="nav-check"></div> Error Handling
+    </div>
+    <div class="nav-item" data-section="production">
+      <div class="nav-check"></div> Production Considerations
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Interview Prep</div>
+    <div class="nav-item" data-section="interview">
+      <div class="nav-check"></div> Q&A Flashcards
+    </div>
+    <div class="nav-item" data-section="quiz">
+      <div class="nav-check"></div> Self-Test Quiz
+    </div>
+  </div>
+</nav>
+
+<!-- TOPBAR -->
+<div class="main">
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()">&#9776;</button>
+    <input type="text" class="search-box" id="searchBox" placeholder="Search topics... (Ctrl+K)" oninput="handleSearch(this.value)">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+  <div class="mode-toggle">
+    <button class="mode-btn active" data-mode="learn" onclick="setMode('learn')">Learn</button>
+    <button class="mode-btn" data-mode="review" onclick="setMode('review')">Review</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ==================== SECTION: OVERVIEW ==================== -->
+<div class="section active" id="sec-overview">
+  <h1>Rahat48's Digital Store</h1>
+  <p class="section-subtitle">A full-stack e-commerce demo integrating the bKash Tokenized Checkout payment gateway.</p>
+
+  <h2>Tech Stack</h2>
+  <table>
+    <tr><th>Layer</th><th>Technology</th></tr>
+    <tr><td>Backend</td><td>Node.js, Express, SQLite (better-sqlite3)</td></tr>
+    <tr><td>Frontend</td><td>React (Vite), React Router</td></tr>
+    <tr><td>Payment</td><td>bKash Tokenized Checkout API (Sandbox)</td></tr>
+  </table>
+
+  <h2>Setup</h2>
+  <div class="tabs">
+    <div class="tab-headers">
+      <div class="tab-header active" data-tab="setup-server">Server</div>
+      <div class="tab-header" data-tab="setup-client">Client</div>
+    </div>
+    <div class="tab-content active" id="tab-setup-server">
+      <pre><code><span class="cmt"># Terminal 1 - Start the backend</span>
+<span class="kw">cd</span> server
+npm install
+npm run dev
+<span class="cmt"># Runs on http://localhost:5000</span></code></pre>
+    </div>
+    <div class="tab-content" id="tab-setup-client">
+      <pre><code><span class="cmt"># Terminal 2 - Start the frontend</span>
+<span class="kw">cd</span> client
+npm install
+npm run dev
+<span class="cmt"># Runs on http://localhost:5173</span></code></pre>
+    </div>
+  </div>
+
+  <h2>Payment Flow (Quick)</h2>
+  <ol>
+    <li>Browse products and add to cart</li>
+    <li>Go to Cart, enter your name, click <strong>"Pay with bKash"</strong></li>
+    <li>You're redirected to bKash sandbox payment page</li>
+    <li>Enter test PIN: <code>12121</code>, OTP: <code>123456</code></li>
+    <li>bKash redirects back to the app with payment result</li>
+    <li>View order history with transaction IDs on the Orders page</li>
+  </ol>
+
+  <h2>Sandbox Test Info</h2>
+  <table>
+    <tr><th>Item</th><th>Value</th></tr>
+    <tr><td>Test Wallet</td><td><code>01770618575</code></td></tr>
+    <tr><td>Test PIN</td><td><code>12121</code></td></tr>
+    <tr><td>Test OTP</td><td><code>123456</code></td></tr>
+    <tr><td>Insufficient balance</td><td><code>01823074817</code></td></tr>
+    <tr><td>Debit blocked</td><td><code>01823074818</code></td></tr>
+  </table>
+
+  <h2>API Endpoints</h2>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+    <tr><td><code>GET</code></td><td><code>/api/products</code></td><td>List all products</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/orders</code></td><td>List all orders</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/orders/:id</code></td><td>Order details with items</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/payment/create</code></td><td>Initiate bKash payment</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/payment/callback</code></td><td>bKash redirect callback</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/payment/status/:orderId</code></td><td>Check payment status</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/payment/refund/:orderId</code></td><td>Refund a payment</td></tr>
+  </table>
+
+  <h2>Architecture</h2>
+  <pre><code>User --> React Frontend --> Express API --> bKash Tokenized Checkout API
+                                |
+                            SQLite DB
+                     (orders, payments, products)</code></pre>
+
+  <button class="section-complete-btn" onclick="completeSection('overview')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: BIG PICTURE ==================== -->
+<div class="section" id="sec-bigpicture">
+  <h1>The Big Picture</h1>
+  <p class="section-subtitle">What problem are we solving and why does it matter?</p>
+
+  <h2>What is a Payment Gateway?</h2>
+  <p>Imagine you're buying a course online. You click "Pay" -- but how does the money move from YOUR wallet to the SELLER's account?</p>
+
+  <pre><code>You (Buyer)  -->  <span class="var">???</span>  -->  Seller (Merchant)</code></pre>
+
+  <p>That <strong>"???"</strong> is the <strong>payment gateway</strong>. It's a middleman that:</p>
+  <ol>
+    <li>Securely collects your payment info (wallet number, PIN)</li>
+    <li>Talks to your bank/wallet provider to deduct money</li>
+    <li>Transfers money to the seller's account</li>
+    <li>Tells the seller "payment is done, deliver the product"</li>
+  </ol>
+
+  <div class="analogy-box">
+    <h4>Real-world Analogy</h4>
+    <p>Think of a <strong>cashier at a store</strong>:</p>
+    <ul>
+      <li>You give money to the cashier (not directly to the product manufacturer)</li>
+      <li>The cashier verifies the money is real</li>
+      <li>The cashier gives you a receipt</li>
+      <li>The store gets the money later through settlement</li>
+    </ul>
+    <p><strong>bKash payment gateway = digital cashier</strong></p>
+  </div>
+
+  <h2>Interactive Payment Flow</h2>
+  <p>Click <strong>Next Step</strong> to walk through the entire payment process:</p>
+
+  <div class="flow-diagram" id="flowDiagram">
+    <div class="flow-steps" id="flowSteps">
+      <div class="flow-step highlighted" data-step="0"><span class="step-num">1</span> User browses products on React frontend <div class="step-actor">Actor: User + Frontend</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="1"><span class="step-num">2</span> Adds items to cart, clicks "Pay with bKash" <div class="step-actor">Actor: User + Frontend</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="2"><span class="step-num">3</span> Frontend calls backend: POST /api/payment/create <div class="step-actor">Actor: Frontend --> Backend</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="3"><span class="step-num">4</span> Backend calls bKash API: "Create Payment" <div class="step-actor">Actor: Backend --> bKash API</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="4"><span class="step-num">5</span> User redirected to bKash's payment page <div class="step-actor">Actor: User on bKash's page</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="5"><span class="step-num">6</span> User enters wallet, PIN, OTP on bKash's page <div class="step-actor">Actor: User + bKash (we NEVER see PIN/OTP)</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="6"><span class="step-num">7</span> bKash redirects back to our callback URL <div class="step-actor">Actor: bKash --> Our Backend</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="7"><span class="step-num">8</span> Backend calls bKash API: "Execute Payment" <div class="step-actor">Actor: Backend --> bKash API</div></div>
+      <div class="flow-arrow">&#9660;</div>
+      <div class="flow-step" data-step="8"><span class="step-num">9</span> Database updated, user sees success page <div class="step-actor">Actor: Backend + Frontend</div></div>
+    </div>
+    <div class="flow-controls">
+      <button class="flow-btn" onclick="flowPrev()">&#9664; Prev</button>
+      <button class="flow-btn primary" onclick="flowNext()">Next &#9654;</button>
+      <button class="flow-btn" onclick="flowReset()">Reset</button>
+    </div>
+    <div class="flow-detail" id="flowDetail">
+      <strong>Step 1:</strong> The user opens the React app and sees the product listing page. Products are fetched from our Express backend via <code>GET /api/products</code>.
+    </div>
+  </div>
+
+  <div class="concept-card orange">
+    <h4>Key Insight</h4>
+    <p>The user's PIN and OTP are entered on <strong>bKash's own page</strong>. Our app NEVER sees or handles that sensitive data. This is by design for security (PCI DSS compliance).</p>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('bigpicture')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: TECH STACK ==================== -->
+<div class="section" id="sec-techstack">
+  <h1>Tech Stack</h1>
+  <p class="section-subtitle">Why we chose these tools and what each one does.</p>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      Node.js -- The Runtime <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>What:</strong> JavaScript running outside the browser, on the server.</p>
+      <p><strong>Why:</strong></p>
+      <ul>
+        <li>Same language (JS) for frontend and backend</li>
+        <li>Non-blocking I/O -- great for handling many API calls (like calling bKash)</li>
+        <li>Huge ecosystem (npm packages for everything)</li>
+      </ul>
+      <p><strong>In our project:</strong> Node.js runs our Express server.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      Express.js -- The Web Framework <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>What:</strong> A minimal framework for building HTTP APIs in Node.js.</p>
+      <p><strong>Core concept -- Routes:</strong></p>
+      <pre><code><span class="cmt">// When someone sends GET request to /api/products,</span>
+<span class="cmt">// run this function and send back product data</span>
+app.<span class="fn">get</span>(<span class="str">'/api/products'</span>, (req, res) => {
+    <span class="kw">const</span> products = <span class="fn">getProductsFromDB</span>();
+    res.<span class="fn">json</span>(products);  <span class="cmt">// Send JSON response</span>
+});</code></pre>
+      <p><strong>Core concept -- Middleware:</strong></p>
+      <pre><code><span class="cmt">// Middleware = functions that run BEFORE your route handler</span>
+app.<span class="fn">use</span>(express.<span class="fn">json</span>());  <span class="cmt">// Parses JSON request bodies</span>
+app.<span class="fn">use</span>(<span class="fn">cors</span>());           <span class="cmt">// Allows cross-origin requests</span>
+
+<span class="cmt">// Request flow:</span>
+<span class="cmt">// Client -> cors() -> json() -> YOUR ROUTE HANDLER -> Response</span></code></pre>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      SQLite (via better-sqlite3) -- The Database <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>What:</strong> A file-based SQL database. No server needed.</p>
+      <p><strong>Why:</strong> Zero setup, data in a single file, uses standard SQL.</p>
+      <p><strong>In production</strong>, you'd use PostgreSQL or MySQL.</p>
+      <div class="compare">
+        <div class="compare-good">
+          <div class="compare-label">better-sqlite3 (what we use)</div>
+          <pre><code><span class="kw">const</span> product = db.<span class="fn">prepare</span>(
+  <span class="str">'SELECT * FROM products WHERE id = ?'</span>
+).<span class="fn">get</span>(<span class="num">1</span>);</code></pre>
+        </div>
+        <div class="compare-bad">
+          <div class="compare-label">sqlite3 (callback mess)</div>
+          <pre><code>db.<span class="fn">get</span>(<span class="str">'SELECT * ...'</span>, [<span class="num">1</span>],
+  (err, row) => {
+    <span class="kw">if</span> (err) { <span class="cmt">/* handle */</span> }
+    <span class="cmt">// use row here</span>
+});</code></pre>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      Axios -- HTTP Client <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>What:</strong> A library for making HTTP requests from Node.js (or browser).</p>
+      <p><strong>Why:</strong> Cleaner than built-in <code>http</code>, auto JSON parsing, timeout support (critical for payments).</p>
+      <pre><code><span class="kw">const</span> { data } = <span class="kw">await</span> axios.<span class="fn">post</span>(
+    <span class="str">'https://bkash-sandbox-url/tokenized/checkout/create'</span>,
+    { amount: <span class="str">'499'</span>, currency: <span class="str">'BDT'</span> },       <span class="cmt">// Request body</span>
+    { headers: { Authorization: token } }       <span class="cmt">// Headers</span>
+);
+<span class="cmt">// `data` automatically contains the parsed JSON response</span></code></pre>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      dotenv -- Environment Variables <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>Loads variables from a <code>.env</code> file into <code>process.env</code>. Keeps secrets OUT of your code.</p>
+      <pre><code><span class="cmt"># .env file (NEVER commit this)</span>
+BKASH_APP_KEY=4f6o0cjiki2rfm34kfdadl1eqq
+BKASH_APP_SECRET=2is7hdktrekvrbljjh44ll3d9l1dtjo4pasmjvs5vl5qr3fug4b
+
+<span class="cmt"># In your code:</span>
+<span class="kw">const</span> key = process.env.BKASH_APP_KEY;</code></pre>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      CORS -- Cross-Origin Resource Sharing <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Problem:</strong> React runs on <code>localhost:5173</code>, API on <code>localhost:5000</code>. Browsers block cross-origin requests by default.</p>
+      <p><strong>Solution:</strong></p>
+      <pre><code>app.<span class="fn">use</span>(<span class="fn">cors</span>({ origin: <span class="str">'http://localhost:5173'</span> }));</code></pre>
+      <p>Without this, every API call from the frontend would fail.</p>
+    </div></div>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('techstack')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: ARCHITECTURE ==================== -->
+<div class="section" id="sec-architecture">
+  <h1>Backend Architecture</h1>
+  <p class="section-subtitle">How the code is organized and why.</p>
+
+  <h2>Folder Structure</h2>
+  <pre><code>server/src/
+&#9500;&#9472;&#9472; index.js          <span class="cmt">&#8592; Entry point. Wires everything together.</span>
+&#9500;&#9472;&#9472; config/
+&#9474;   &#9492;&#9472;&#9472; bkash.js      <span class="cmt">&#8592; bKash credentials in one place</span>
+&#9500;&#9472;&#9472; routes/
+&#9474;   &#9500;&#9472;&#9472; products.js   <span class="cmt">&#8592; Handles /api/products/* requests</span>
+&#9474;   &#9500;&#9472;&#9472; orders.js     <span class="cmt">&#8592; Handles /api/orders/* requests</span>
+&#9474;   &#9492;&#9472;&#9472; payment.js    <span class="cmt">&#8592; Handles /api/payment/* requests</span>
+&#9500;&#9472;&#9472; services/
+&#9474;   &#9492;&#9472;&#9472; bkashService.js <span class="cmt">&#8592; ALL bKash API communication</span>
+&#9500;&#9472;&#9472; db/
+&#9474;   &#9492;&#9472;&#9472; database.js   <span class="cmt">&#8592; Database setup, tables, seed data</span>
+&#9492;&#9472;&#9472; middleware/
+    &#9492;&#9472;&#9472; errorHandler.js <span class="cmt">&#8592; Catches errors, sends clean responses</span></code></pre>
+
+  <div class="concept-card blue">
+    <h4>Separation of Concerns</h4>
+    <p><strong>Routes</strong> = WHAT endpoints exist | <strong>Services</strong> = HOW to talk to external APIs | <strong>DB</strong> = HOW to store data | <strong>Config</strong> = WHERE credentials live | <strong>Middleware</strong> = CROSS-CUTTING concerns</p>
+  </div>
+
+  <h2>Request Lifecycle</h2>
+  <pre><code>Client Request
+     &#9474;
+     &#9660;
+&#9484; Express Middleware &#9488;  1. cors() - Check if origin is allowed
+&#9474;   Stack            &#9474;  2. express.json() - Parse JSON body
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  3. Route matching
+         &#9474;
+         &#9660;
+&#9484; Route Handler     &#9488;  4. Validate input
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  5. Call service/database
+         &#9474;
+         &#9660;
+&#9484; Service Layer     &#9488;  6. Call bKash API (if payment)
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  7. Process response
+         &#9474;
+         &#9660;
+&#9484; Database Layer    &#9488;  8. Save/retrieve data
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+         &#9474;
+         &#9660;
+  JSON Response back to Client</code></pre>
+
+  <div class="concept-card green">
+    <h4>Interview Answer</h4>
+    <p><em>"I used a layered architecture -- routes handle HTTP concerns, services handle business logic and external API calls, and the database layer handles persistence. This makes the code testable and each layer can change independently."</em></p>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('architecture')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: DATABASE ==================== -->
+<div class="section" id="sec-database">
+  <h1>Database Design</h1>
+  <p class="section-subtitle">Why these tables, what normalization means, and payment state machines.</p>
+
+  <h2>Entity Relationship</h2>
+  <pre><code>&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;   products   &#9474;     &#9474;    orders    &#9474;     &#9474;   payments   &#9474;
+&#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;     &#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;     &#9500;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;
+&#9474; id (PK)      &#9474;     &#9474; id (PK)      &#9474;     &#9474; id (PK)      &#9474;
+&#9474; name         &#9474;     &#9474; customer_name&#9474;     &#9474; order_id (FK)&#9474;&#9472;> orders.id
+&#9474; description  &#9474;     &#9474; total_amount &#9474;     &#9474; bkash_payment&#9474;
+&#9474; price        &#9474;     &#9474; status       &#9474;     &#9474; bkash_trx_id &#9474;
+&#9474; image_url    &#9474;     &#9474; created_at   &#9474;     &#9474; amount       &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9516;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474; status       &#9474;
+       &#9474;                    &#9474;              &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+       &#9474;              &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9524;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+       &#9474;              &#9474;order_items  &#9474;
+       &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9508;            &#9474;
+                      &#9474; order_id (FK)&#9474;&#9472;> orders.id
+                      &#9474; product_id   &#9474;&#9472;> products.id
+                      &#9474; quantity     &#9474;
+                      &#9474; price        &#9474;
+                      &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</code></pre>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      Why separate orders and payments? <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <ol>
+        <li>An order can exist <strong>WITHOUT</strong> a payment (user abandoned checkout)</li>
+        <li>A failed payment might be retried -- multiple payment attempts for one order</li>
+        <li>Separation of concerns -- order = WHAT was bought, payment = HOW it was paid</li>
+      </ol>
+      <p>This is called <strong>normalization</strong> in database design.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+      Why store price in order_items AND products? <span class="collapsible-arrow">&#9654;</span>
+    </div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>Because product prices can change! If a course costs 499 BDT today and 599 BDT tomorrow, the order should remember the price <strong>at the time of purchase</strong>.</p>
+      <p>This is called <strong>capturing the price at transaction time</strong>.</p>
+    </div></div>
+  </div>
+
+  <h2>Payment State Machine</h2>
+  <pre><code>                   &#9484;&#9472;&#9472;&#9472; User cancels &#9472;&#9472;> <span class="orange">[cancelled]</span>
+                   &#9474;
+<span class="var">[pending]</span> --> <span class="blue">[initiated]</span> --> <span class="str">[completed]</span> --> <span class="purple">[refunded]</span>
+                   &#9474;
+                   &#9492;&#9472;&#9472;&#9472; API error &#9472;&#9472;&#9472;&#9472;> <span class="kw">[failed]</span></code></pre>
+
+  <table>
+    <tr><th>Status</th><th>Meaning</th></tr>
+    <tr><td><code>pending</code></td><td>Order created, payment not started</td></tr>
+    <tr><td><code>initiated</code></td><td>bKash createPayment called, waiting for user</td></tr>
+    <tr><td><code>completed</code></td><td>Payment executed, money transferred</td></tr>
+    <tr><td><code>cancelled</code></td><td>User clicked cancel on bKash page</td></tr>
+    <tr><td><code>failed</code></td><td>Something went wrong</td></tr>
+    <tr><td><code>refunded</code></td><td>Money returned to customer</td></tr>
+  </table>
+
+  <button class="section-complete-btn" onclick="completeSection('database')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: GATEWAY ==================== -->
+<div class="section" id="sec-gateway">
+  <h1>Payment Gateway -- Core Concepts</h1>
+  <p class="section-subtitle">Tokenized checkout, tokens, and the three-step payment dance.</p>
+
+  <h2>What is "Tokenized Checkout"?</h2>
+  <ol>
+    <li>We call bKash API --> get a payment URL</li>
+    <li>We redirect user to that URL (bKash's own page)</li>
+    <li>User enters their credentials on bKash's page</li>
+    <li>bKash redirects back to us</li>
+  </ol>
+
+  <p><strong>Why "tokenized"?</strong> Because we never see the user's real credentials. We work with tokens:</p>
+  <table>
+    <tr><th>Token</th><th>Purpose</th></tr>
+    <tr><td><code>id_token</code></td><td>Proves WE are a legitimate merchant</td></tr>
+    <tr><td><code>paymentID</code></td><td>Identifies a specific payment transaction</td></tr>
+    <tr><td><code>trxID</code></td><td>Final transaction ID after payment completes</td></tr>
+  </table>
+
+  <h2>Why tokens instead of password on every call?</h2>
+  <div class="compare">
+    <div class="compare-bad">
+      <div class="compare-label">Bad: No tokens</div>
+      <p style="font-size:0.85rem; color:var(--text2)">Every API call: "Hey bKash, I'm merchant X, password Y, do Z"</p>
+      <p style="font-size:0.85rem; color:var(--red)">Password sent 100 times = 100 chances for interception</p>
+    </div>
+    <div class="compare-good">
+      <div class="compare-label">Good: With tokens</div>
+      <p style="font-size:0.85rem; color:var(--text2)">Login once: get a token. Every call: use the token.</p>
+      <p style="font-size:0.85rem; color:var(--green)">Password sent once. Token is temporary (1 hour).</p>
+    </div>
+  </div>
+
+  <h2>The Three-Step Payment Dance</h2>
+  <div class="concept-card">
+    <h4>Step 1: CREATE</h4>
+    <p><strong>Merchant:</strong> "I want to charge customer 499 BDT"</p>
+    <p><strong>bKash:</strong> "OK, here's a payment page URL. Send the customer there."</p>
+  </div>
+  <div class="concept-card blue">
+    <h4>Step 2: AUTHORIZE</h4>
+    <p><strong>Customer:</strong> enters PIN + OTP on bKash's page</p>
+    <p><strong>bKash:</strong> "Customer approved! Redirecting them back to you."</p>
+  </div>
+  <div class="concept-card green">
+    <h4>Step 3: EXECUTE</h4>
+    <p><strong>Merchant:</strong> "Great, finalize the payment"</p>
+    <p><strong>bKash:</strong> "Done! Here's the transaction ID: TRX12345"</p>
+  </div>
+
+  <div class="concept-card orange">
+    <h4>Why not just one step?</h4>
+    <p>Security and user consent. CREATE doesn't move money -- it reserves intent. User must AUTHORIZE on bKash's secure page. Then EXECUTE actually transfers. This prevents merchants from charging users without knowledge. It's the <strong>"two-phase commit"</strong> pattern.</p>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('gateway')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: BKASH API ==================== -->
+<div class="section" id="sec-bkashapi">
+  <h1>bKash API -- Step by Step</h1>
+  <p class="section-subtitle">Every API call with real request/response examples.</p>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">Step 0: Grant Token (Authentication) <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Purpose:</strong> Prove to bKash that we're a legitimate merchant.</p>
+      <div class="tabs">
+        <div class="tab-headers">
+          <div class="tab-header active" data-tab="grant-req">Request</div>
+          <div class="tab-header" data-tab="grant-res">Response</div>
+        </div>
+        <div class="tab-content active" id="tab-grant-req">
+          <pre><code><span class="kw">POST</span> <span class="str">/tokenized/checkout/token/grant</span>
+
+<span class="cmt">Headers:</span>
+  Content-Type: application/json
+  username: sandboxTokenizedUser02
+  password: sandboxTokenizedUser02@12345
+
+<span class="cmt">Body:</span>
+{
+  <span class="str">"app_key"</span>: <span class="str">"4f6o0cjiki2rfm34kfdadl1eqq"</span>,
+  <span class="str">"app_secret"</span>: <span class="str">"2is7hdktrekvrbljjh44..."</span>
+}</code></pre>
+        </div>
+        <div class="tab-content" id="tab-grant-res">
+          <pre><code>{
+  <span class="str">"statusCode"</span>: <span class="str">"0000"</span>,           <span class="cmt">// 0000 = success</span>
+  <span class="str">"id_token"</span>: <span class="str">"eyJraWQiOiJ..."</span>,   <span class="cmt">// USE THIS for all calls</span>
+  <span class="str">"token_type"</span>: <span class="str">"Bearer"</span>,
+  <span class="str">"expires_in"</span>: <span class="num">3600</span>,             <span class="cmt">// Valid 1 hour</span>
+  <span class="str">"refresh_token"</span>: <span class="str">"eyJhbG..."</span>   <span class="cmt">// Valid 28 days</span>
+}</code></pre>
+        </div>
+      </div>
+      <div class="concept-card blue">
+        <h4>Why cache the token?</h4>
+        <p>bKash rate-limits token requests. Token is valid 1 hour. We cache it for 55 minutes (5-min safety buffer) so we don't request a new one before every operation.</p>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">Step 1: Create Payment <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Purpose:</strong> Tell bKash "I want to charge X amount" and get a payment page URL.</p>
+      <div class="tabs">
+        <div class="tab-headers">
+          <div class="tab-header active" data-tab="create-req">Request</div>
+          <div class="tab-header" data-tab="create-res">Response</div>
+        </div>
+        <div class="tab-content active" id="tab-create-req">
+          <pre><code><span class="kw">POST</span> <span class="str">/tokenized/checkout/create</span>
+
+<span class="cmt">Headers:</span>
+  Authorization: &lt;id_token&gt;
+  X-APP-Key: 4f6o0cjiki2rfm34kfdadl1eqq
+
+<span class="cmt">Body:</span>
+{
+  <span class="str">"mode"</span>: <span class="str">"0011"</span>,              <span class="cmt">// URL-based checkout</span>
+  <span class="str">"payerReference"</span>: <span class="str">" "</span>,
+  <span class="str">"callbackURL"</span>: <span class="str">"http://localhost:5000/api/payment/callback"</span>,
+  <span class="str">"amount"</span>: <span class="str">"499"</span>,             <span class="cmt">// Must be STRING, not number</span>
+  <span class="str">"currency"</span>: <span class="str">"BDT"</span>,
+  <span class="str">"intent"</span>: <span class="str">"sale"</span>,
+  <span class="str">"merchantInvoiceNumber"</span>: <span class="str">"INV-1-17760..."</span>  <span class="cmt">// IDEMPOTENCY KEY</span>
+}</code></pre>
+        </div>
+        <div class="tab-content" id="tab-create-res">
+          <pre><code>{
+  <span class="str">"statusCode"</span>: <span class="str">"0000"</span>,
+  <span class="str">"paymentID"</span>: <span class="str">"TR0011Vf..."</span>,
+  <span class="str">"bkashURL"</span>: <span class="str">"https://sandbox.payment.bkash.com/?paymentId=..."</span>,
+  <span class="str">"amount"</span>: <span class="str">"499"</span>,
+  <span class="str">"currency"</span>: <span class="str">"BDT"</span>
+}</code></pre>
+        </div>
+      </div>
+      <div class="concept-card orange">
+        <h4>Idempotency via merchantInvoiceNumber</h4>
+        <p>If you accidentally call createPayment twice with the same invoice number, bKash recognizes the duplicate and won't charge twice. Like pressing an elevator button twice doesn't call two elevators.</p>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">Step 2: User Authorization (bKash's page) <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>This happens <strong>entirely on bKash's side</strong>. Our code does nothing here.</p>
+      <ol>
+        <li>User lands on bkashURL (the pink page)</li>
+        <li>Enters wallet number (<code>01770618575</code> in sandbox)</li>
+        <li>Enters PIN (<code>12121</code>)</li>
+        <li>Enters OTP (<code>123456</code>)</li>
+        <li>bKash redirects to: <code>/api/payment/callback?paymentID=...&status=success</code></li>
+      </ol>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">Step 3: Execute Payment <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Purpose:</strong> FINALIZE the payment. Create only reserves intent -- Execute moves money.</p>
+      <div class="tabs">
+        <div class="tab-headers">
+          <div class="tab-header active" data-tab="exec-req">Request</div>
+          <div class="tab-header" data-tab="exec-res">Response</div>
+        </div>
+        <div class="tab-content active" id="tab-exec-req">
+          <pre><code><span class="kw">POST</span> <span class="str">/tokenized/checkout/execute</span>
+
+<span class="cmt">Body:</span>
+{ <span class="str">"paymentID"</span>: <span class="str">"TR0011Vf..."</span> }</code></pre>
+        </div>
+        <div class="tab-content" id="tab-exec-res">
+          <pre><code>{
+  <span class="str">"statusCode"</span>: <span class="str">"0000"</span>,
+  <span class="str">"trxID"</span>: <span class="str">"BIF0GRSW23"</span>,       <span class="cmt">// FINAL RECEIPT NUMBER</span>
+  <span class="str">"transactionStatus"</span>: <span class="str">"Completed"</span>,
+  <span class="str">"amount"</span>: <span class="str">"499"</span>,
+  <span class="str">"customerMsisdn"</span>: <span class="str">"01770618575"</span>
+}</code></pre>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">Step 4: Query & Refund (Optional) <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Query:</strong> Check status of any payment. Useful for reconciliation.</p>
+      <pre><code><span class="kw">POST</span> <span class="str">/tokenized/checkout/payment/status</span>
+{ <span class="str">"paymentID"</span>: <span class="str">"TR0011Vf..."</span> }</code></pre>
+      <p><strong>Refund:</strong> Return money to customer (full or partial).</p>
+      <pre><code><span class="kw">POST</span> <span class="str">/tokenized/checkout/payment/refund</span>
+{
+  <span class="str">"paymentID"</span>: <span class="str">"TR0011Vf..."</span>,
+  <span class="str">"trxID"</span>: <span class="str">"BIF0GRSW23"</span>,
+  <span class="str">"amount"</span>: <span class="str">"499"</span>,    <span class="cmt">// Can be partial e.g. "200"</span>
+  <span class="str">"reason"</span>: <span class="str">"Customer request"</span>
+}</code></pre>
+    </div></div>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('bkashapi')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: CODE WALKTHROUGH ==================== -->
+<div class="section" id="sec-codewalkt">
+  <h1>Backend Code Walkthrough</h1>
+  <p class="section-subtitle">Line-by-line explanation of the most important files.</p>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">index.js -- Entry Point <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+<pre><code><span class="fn">require</span>(<span class="str">'dotenv'</span>).<span class="fn">config</span>();
+<span class="cmt">// MUST be first line. Loads .env into process.env</span>
+
+<span class="kw">const</span> express = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> cors = <span class="fn">require</span>(<span class="str">'cors'</span>);
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+<span class="cmt">// === MIDDLEWARE (runs on EVERY request, in order) ===</span>
+app.<span class="fn">use</span>(<span class="fn">cors</span>({ origin: process.env.CLIENT_URL }));
+<span class="cmt">// "Allow requests from http://localhost:5173"</span>
+
+app.<span class="fn">use</span>(express.<span class="fn">json</span>());
+<span class="cmt">// Without this: req.body is undefined</span>
+
+<span class="cmt">// === DATABASE ===</span>
+<span class="fn">initDB</span>();  <span class="cmt">// Creates tables + seeds data on first run</span>
+
+<span class="cmt">// === ROUTES ===</span>
+app.<span class="fn">use</span>(<span class="str">'/api/products'</span>, productRoutes);
+app.<span class="fn">use</span>(<span class="str">'/api/payment'</span>, paymentRoutes);
+
+<span class="cmt">// === ERROR HANDLER (must be LAST) ===</span>
+app.<span class="fn">use</span>(errorHandler);
+<span class="cmt">// Express knows it's an error handler because of 4 params: (err, req, res, next)</span>
+
+app.<span class="fn">listen</span>(<span class="num">5000</span>);</code></pre>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">payment.js -- The Callback (most important route) <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+<pre><code>router.<span class="fn">get</span>(<span class="str">'/callback'</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> { paymentID, status } = req.query;
+  <span class="cmt">// bKash redirects to:</span>
+  <span class="cmt">// /callback?paymentID=TR0011Vf...&status=success</span>
+
+  <span class="kw">const</span> payment = db.<span class="fn">prepare</span>(
+    <span class="str">'SELECT * FROM payments WHERE bkash_payment_id = ?'</span>
+  ).<span class="fn">get</span>(paymentID);
+
+  <span class="kw">if</span> (status === <span class="str">'success'</span>) {
+    <span class="cmt">// User authorized -> now EXECUTE to finalize</span>
+    <span class="kw">const</span> result = <span class="kw">await</span> bkashService.<span class="fn">executePayment</span>(paymentID);
+
+    <span class="kw">if</span> (result.transactionStatus === <span class="str">'Completed'</span>) {
+      <span class="cmt">// Update DB with trxID (our proof of payment)</span>
+      db.<span class="fn">prepare</span>(<span class="str">'UPDATE payments SET status=?, bkash_trx_id=? ...'</span>)
+        .<span class="fn">run</span>(<span class="str">'completed'</span>, result.trxID, paymentID);
+
+      <span class="cmt">// Redirect user to React success page</span>
+      <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`/payment-status?status=success`</span>);
+    }
+  }
+  <span class="cmt">// Handle cancel/failure...</span>
+});</code></pre>
+      <div class="concept-card purple">
+        <h4>Why res.redirect() instead of res.json()?</h4>
+        <p>This endpoint is called via <strong>browser redirect</strong> (bKash sends the user's browser here), not an AJAX call. The browser is literally navigating to this URL, so we redirect to the React frontend.</p>
+      </div>
+    </div></div>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('codewalkt')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: SECURITY ==================== -->
+<div class="section" id="sec-security">
+  <h1>Security</h1>
+  <p class="section-subtitle">6 security practices implemented and why they matter.</p>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">1. Credentials never reach the frontend <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <div class="compare">
+        <div class="compare-bad">
+          <div class="compare-label">Wrong (insecure)</div>
+          <p style="font-size:0.85rem;color:var(--text2)">Frontend calls bKash directly with app_key and app_secret. User opens DevTools --> sees your keys --> can make fake payments.</p>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label">Right (what we do)</div>
+          <p style="font-size:0.85rem;color:var(--text2)">Frontend calls OUR backend --> backend calls bKash with secrets. Secrets stay on server, user never sees them.</p>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">2. SQL Injection Prevention <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <div class="compare">
+        <div class="compare-bad">
+          <div class="compare-label">Vulnerable</div>
+<pre><code>db.<span class="fn">prepare</span>(<span class="str">`SELECT * FROM users
+  WHERE name = '${userInput}'`</span>);
+<span class="cmt">// userInput = "'; DROP TABLE users; --"</span>
+<span class="cmt">// --> Deletes your entire table!</span></code></pre>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label">Safe (parameterized)</div>
+<pre><code>db.<span class="fn">prepare</span>(
+  <span class="str">'SELECT * FROM users WHERE name = ?'</span>
+).<span class="fn">get</span>(userInput);
+<span class="cmt">// ? placeholder escapes special chars</span>
+<span class="cmt">// Malicious input treated as literal string</span></code></pre>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">3. CORS restricts API access <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>We restrict which websites can call our API. Without this, any random website (evil.com) could hit our payment endpoints.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">4. User PIN/OTP never touches our server <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>User enters PIN and OTP on <strong>bKash's own page</strong>. Our server never receives, stores, or sees this data. This is <strong>PCI DSS compliance</strong> -- sensitive credentials only handled by certified processors.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">5. Don't trust the frontend <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <div class="compare">
+        <div class="compare-bad">
+          <div class="compare-label">Wrong</div>
+          <p style="font-size:0.85rem;color:var(--text2)">Frontend says "payment successful!" --> mark order as paid. User can fake this via browser console.</p>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label">Right</div>
+          <p style="font-size:0.85rem;color:var(--text2)">bKash redirects to our BACKEND. Backend calls executePayment API to VERIFY with bKash. Only if bKash confirms --> mark as paid.</p>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">6. Idempotency prevents double charges <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Scenario:</strong> User clicks "Pay", network slow, clicks again.</p>
+      <p><strong>Without idempotency:</strong> Two payments created --> user charged twice!</p>
+      <p><strong>With idempotency:</strong> Both requests use same <code>merchantInvoiceNumber</code>. bKash says "already exists". User charged once.</p>
+    </div></div>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('security')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: ERRORS ==================== -->
+<div class="section" id="sec-errors">
+  <h1>Error Handling</h1>
+  <p class="section-subtitle">What can go wrong and how we handle it.</p>
+
+  <table>
+    <tr><th>Scenario</th><th>How We Handle It</th></tr>
+    <tr><td>bKash API is down</td><td>30-second timeout, show error to user</td></tr>
+    <tr><td>Token expired mid-transaction</td><td>Auto-refresh via refreshToken()</td></tr>
+    <tr><td>User cancels payment</td><td>status=cancel in callback, update DB</td></tr>
+    <tr><td>Insufficient balance</td><td>bKash returns failure, graceful message</td></tr>
+    <tr><td>Network drops during callback</td><td>Reconciliation can catch this later</td></tr>
+    <tr><td>Double-click on Pay</td><td>Idempotent invoice number</td></tr>
+  </table>
+
+  <h2>The try/catch + next(err) pattern</h2>
+<pre><code>router.<span class="fn">post</span>(<span class="str">'/create'</span>, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="cmt">// ... payment logic ...</span>
+    res.<span class="fn">json</span>(result);
+  } <span class="kw">catch</span> (err) {
+    <span class="fn">next</span>(err);   <span class="cmt">// Passes to errorHandler middleware</span>
+  }
+});
+
+<span class="cmt">// In middleware/errorHandler.js:</span>
+<span class="kw">function</span> <span class="fn">errorHandler</span>(err, req, res, next) {
+  console.<span class="fn">error</span>(<span class="str">'Error:'</span>, err.message);
+  res.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({
+    error: err.message || <span class="str">'Internal server error'</span>,
+  });
+  <span class="cmt">// Never send stack traces to client (security risk)</span>
+}</code></pre>
+
+  <div class="concept-card green">
+    <h4>Why centralized error handling?</h4>
+    <p>Every route uses the same error format. Want to add Slack alerts for errors? Change ONE file. Want to log to a service? ONE file.</p>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('errors')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: PRODUCTION ==================== -->
+<div class="section" id="sec-production">
+  <h1>Production Considerations</h1>
+  <p class="section-subtitle">What you'd change for a real-world production app.</p>
+
+  <div class="collapsible open">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">1. Webhooks instead of Callbacks <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <div class="compare">
+        <div class="compare-bad">
+          <div class="compare-label">Callback (what we use)</div>
+          <p style="font-size:0.85rem;color:var(--text2)">bKash redirects user's browser to our URL. Problem: if user closes browser before redirect, we never know about the payment!</p>
+        </div>
+        <div class="compare-good">
+          <div class="compare-label">Webhook (production)</div>
+          <p style="font-size:0.85rem;color:var(--text2)">bKash sends a server-to-server HTTP request. No browser involved. Reliable even if user disconnects. Called IPN (Instant Payment Notification).</p>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">2. PostgreSQL instead of SQLite <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>SQLite: one writer at a time, no network access, no replication. PostgreSQL: concurrent writes, network-accessible, replication/backup built in.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">3. Redis for Token Caching <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p><strong>Current:</strong> Token in JS variable. Server restart = token lost. Multiple servers = different tokens.</p>
+      <p><strong>Redis:</strong> External store. Survives restarts. Shared across servers. Built-in TTL (auto-expire).</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">4. Payment Reconciliation <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>Daily job: fetch all "initiated" payments, call bKash queryPayment for each, update mismatched statuses, alert team about discrepancies. Catches missed callbacks/webhooks.</p>
+    </div></div>
+  </div>
+
+  <div class="collapsible">
+    <div class="collapsible-header" onclick="toggleCollapsible(this)">5. HTTPS (SSL) <span class="collapsible-arrow">&#9654;</span></div>
+    <div class="collapsible-body"><div class="collapsible-content">
+      <p>bKash <strong>requires</strong> SSL for production callbacks. Sandbox allows HTTP (localhost), but production must be HTTPS.</p>
+    </div></div>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('production')">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: INTERVIEW FLASHCARDS ==================== -->
+<div class="section" id="sec-interview">
+  <h1>Interview Q&A Flashcards</h1>
+  <p class="section-subtitle">Click the card to reveal the answer. Practice until you can answer without peeking.</p>
+
+  <div class="flashcard-container">
+    <div class="flashcard" id="flashcard" onclick="flipFlashcard()">
+      <div class="flashcard-face flashcard-front" id="flashFront"></div>
+      <div class="flashcard-face flashcard-back" id="flashBack"></div>
+    </div>
+  </div>
+  <div class="flashcard-nav">
+    <button class="flow-btn" onclick="prevFlashcard()">&#9664; Prev</button>
+    <span class="flashcard-counter" id="flashCounter">1 / 7</span>
+    <button class="flow-btn" onclick="nextFlashcard()">Next &#9654;</button>
+  </div>
+
+  <button class="section-complete-btn" onclick="completeSection('interview')" style="margin-top:32px">Mark as Learned</button>
+</div>
+
+<!-- ==================== SECTION: QUIZ ==================== -->
+<div class="section" id="sec-quiz">
+  <h1>Self-Test Quiz</h1>
+  <p class="section-subtitle">Test your understanding. 10 questions covering all topics.</p>
+
+  <div id="quizContainer"></div>
+  <div class="quiz-score" id="quizScore" style="display:none"></div>
+
+  <button class="section-complete-btn" onclick="completeSection('quiz')" style="margin-top:32px">Mark as Learned</button>
+</div>
+
+</div><!-- .content -->
+</div><!-- .main -->
+
+<script>
+// ===== STATE =====
+const completed = new Set(JSON.parse(localStorage.getItem('bkash-study-completed') || '[]'));
+let currentSection = 'overview';
+let currentFlowStep = 0;
+let currentFlashcard = 0;
+
+const sections = ['overview','bigpicture','techstack','architecture','database','gateway','bkashapi','codewalkt','security','errors','production','interview','quiz'];
+
+// ===== FLOW DIAGRAM DATA =====
+const flowDetails = [
+  '<strong>Step 1:</strong> The user opens the React app and sees the product grid. Products are fetched from Express backend via <code>GET /api/products</code>, which reads from SQLite.',
+  '<strong>Step 2:</strong> User clicks "Add to Cart" on products. Cart state is managed in React\'s <code>useState</code>. No API call yet -- cart lives in frontend memory.',
+  '<strong>Step 3:</strong> User clicks "Pay with bKash". React sends <code>POST /api/payment/create</code> with cart items and customer name. This is where frontend meets backend.',
+  '<strong>Step 4:</strong> Our Express server calls bKash\'s <code>/tokenized/checkout/create</code> API with the amount and a unique invoice number. bKash returns a <code>bkashURL</code>.',
+  '<strong>Step 5:</strong> Frontend does <code>window.location.href = bkashURL</code>. User leaves our app and lands on bKash\'s secure payment page (the pink page).',
+  '<strong>Step 6:</strong> User enters wallet number, PIN (12121), and OTP (123456) on bKash\'s page. <strong>Our server NEVER sees this data</strong> -- critical for security.',
+  '<strong>Step 7:</strong> bKash redirects user\'s browser to <code>/api/payment/callback?paymentID=...&status=success</code>. Our Express server receives this GET request.',
+  '<strong>Step 8:</strong> Our callback handler calls <code>/tokenized/checkout/execute</code> with the paymentID. This is what actually moves the money. bKash returns a <code>trxID</code>.',
+  '<strong>Step 9:</strong> We save the trxID in our database, update order status to "paid", and redirect the user to the React success page showing their transaction details.',
+];
+
+// ===== FLASHCARD DATA =====
+const flashcards = [
+  { q: 'Explain how your payment gateway integration works.', a: 'I integrated bKash\'s Tokenized Checkout API into a Node.js/Express backend. The flow: user clicks Pay -> backend calls Create Payment API (with unique invoice for idempotency) -> user redirected to bKash\'s page for PIN/OTP (we never see it) -> bKash redirects to our callback -> we call Execute Payment API to finalize -> update database. Also implemented token caching and refund.' },
+  { q: 'Why not handle payment entirely on the frontend?', a: 'Security. Payment credentials (app_key, app_secret) must never be exposed to the client. Anyone could open DevTools and steal them. All bKash API calls happen server-side. Frontend only knows the redirect URL and final status.' },
+  { q: 'What is idempotency and why does it matter in payments?', a: 'Idempotency = doing something multiple times produces the same result as doing it once. In payments, the merchantInvoiceNumber prevents double-charging. If user clicks Pay twice, both requests use the same invoice number. bKash recognizes the duplicate. Critical for financial integrity.' },
+  { q: 'How do you handle payment failures?', a: 'Multiple levels: 30-second API timeouts, auto token refresh, callback handles cancel/failure status by updating DB, centralized error handler, and reconciliation can query bKash to verify missed payments.' },
+  { q: 'What would you change for production?', a: '5 things: (1) SQLite -> PostgreSQL for concurrent access. (2) Add webhooks alongside callbacks for reliability. (3) Redis for token caching across server instances. (4) Daily reconciliation job. (5) HTTPS for callback URL.' },
+  { q: 'What\'s the difference between Create and Execute payment?', a: 'Create reserves intent (doesn\'t move money). User authorizes on bKash page. Execute finalizes and actually transfers money. This two-phase approach ensures money moves only with explicit user consent. Similar to two-phase commit in distributed systems.' },
+  { q: 'How does token management work?', a: 'Authenticate with merchant credentials -> get id_token (1 hour validity). Cache in memory, reuse for all API calls. Refresh 5 minutes before expiry using refresh_token (28 days validity). This minimizes API calls and avoids auth delays during payments.' },
+];
+
+// ===== QUIZ DATA =====
+const quizData = [
+  { q: 'What does the payment gateway act as?', opts: ['A database','A middleman between buyer and seller','A frontend framework','A testing tool'], correct: 1, explain: 'The payment gateway is a middleman that securely handles money transfer between buyer and seller without either needing direct access to banking systems.' },
+  { q: 'Why do we cache the bKash token?', opts: ['To make the app look professional','bKash rate-limits token requests and it\'s valid for 1 hour','Because SQLite requires it','To improve frontend performance'], correct: 1, explain: 'bKash rate-limits token grant calls. Since the token is valid for 1 hour, we cache it and reuse it for all API calls within that window.' },
+  { q: 'What does "idempotency" mean in payment context?', opts: ['Paying faster','Same operation twice = same result (no double charge)','Encrypting payment data','Caching API responses'], correct: 1, explain: 'Idempotency ensures that calling createPayment twice with the same merchantInvoiceNumber only creates one payment. Critical for preventing double charges.' },
+  { q: 'Why is Execute separate from Create?', opts: ['It\'s a bKash limitation','For user consent -- money only moves after user authorizes','To make more API calls','For better caching'], correct: 1, explain: 'Create reserves intent. User authorizes on bKash\'s page. Execute moves money. This two-phase approach prevents merchants from charging without consent.' },
+  { q: 'Where does the user enter their PIN and OTP?', opts: ['On our React frontend','On our Express backend','On bKash\'s own secure page','In the database'], correct: 2, explain: 'Users enter PIN/OTP on bKash\'s page. Our app NEVER sees this sensitive data. This is PCI DSS compliance -- only certified processors handle credentials.' },
+  { q: 'Why use parameterized queries (?) instead of string concatenation?', opts: ['Performance','Prevents SQL injection attacks','Better formatting','Required by SQLite'], correct: 1, explain: 'String concatenation allows attackers to inject malicious SQL. Parameterized queries (?) escape special characters, treating all input as literal strings.' },
+  { q: 'What is the callback URL used for?', opts: ['Calling bKash\'s API','Where bKash redirects the user after payment','Frontend routing','Database connection'], correct: 1, explain: 'After the user authorizes (or cancels) payment on bKash\'s page, bKash redirects their browser to our callback URL with paymentID and status.' },
+  { q: 'Why does the callback use res.redirect() instead of res.json()?', opts: ['It\'s faster','The browser is navigating to this URL (not AJAX)','JSON doesn\'t work with payments','Express requires it'], correct: 1, explain: 'The callback is triggered by a browser redirect from bKash, not an AJAX call. The user\'s browser is literally at this URL, so we redirect them to the React frontend.' },
+  { q: 'What would you use instead of SQLite in production?', opts: ['MongoDB','Redis','PostgreSQL','More SQLite files'], correct: 2, explain: 'PostgreSQL handles concurrent writes, is network-accessible (shared across servers), and has built-in replication/backup. SQLite is single-writer and file-based.' },
+  { q: 'Why keep .env in .gitignore?', opts: ['It\'s too large','Contains secret credentials that should never go to GitHub','It\'s not needed in production','Git doesn\'t support .env files'], correct: 1, explain: 'The .env file contains bKash API keys and secrets. If committed to GitHub, anyone could use them. Secrets must stay local and be configured separately per environment.' },
+];
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  updateProgress();
+  renderNav();
+  initFlashcards();
+  renderQuiz();
+  showSection('overview');
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('searchBox').focus();
+    }
+  });
+});
+
+// ===== NAVIGATION =====
+function showSection(id) {
+  currentSection = id;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + id)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.section === id);
+  });
+  window.scrollTo(0, 0);
+}
+
+function renderNav() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => showSection(item.dataset.section));
+    if (completed.has(item.dataset.section)) {
+      item.classList.add('completed');
+      item.querySelector('.nav-check').textContent = '\u2713';
+    }
+  });
+}
+
+// ===== PROGRESS =====
+function updateProgress() {
+  const pct = Math.round((completed.size / sections.length) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${completed.size} / ${sections.length} sections completed`;
+}
+
+function completeSection(id) {
+  const btn = event.target;
+  if (completed.has(id)) return;
+  completed.add(id);
+  localStorage.setItem('bkash-study-completed', JSON.stringify([...completed]));
+  btn.textContent = 'Completed!';
+  btn.classList.add('done');
+  const nav = document.querySelector(`.nav-item[data-section="${id}"]`);
+  if (nav) {
+    nav.classList.add('completed');
+    nav.querySelector('.nav-check').textContent = '\u2713';
+  }
+  updateProgress();
+
+  // Auto-advance after short delay
+  const idx = sections.indexOf(id);
+  if (idx < sections.length - 1) {
+    setTimeout(() => showSection(sections[idx + 1]), 800);
+  }
+}
+
+// ===== COLLAPSIBLES =====
+function toggleCollapsible(header) {
+  header.parentElement.classList.toggle('open');
+}
+
+// ===== TABS =====
+document.addEventListener('click', e => {
+  const th = e.target.closest('.tab-header');
+  if (!th) return;
+  const tabs = th.closest('.tabs');
+  tabs.querySelectorAll('.tab-header').forEach(h => h.classList.remove('active'));
+  tabs.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  th.classList.add('active');
+  document.getElementById('tab-' + th.dataset.tab)?.classList.add('active');
+});
+
+// ===== FLOW DIAGRAM =====
+function updateFlow() {
+  document.querySelectorAll('.flow-step').forEach((s, i) => {
+    s.classList.toggle('highlighted', i <= currentFlowStep);
+  });
+  document.querySelectorAll('.flow-arrow').forEach((a, i) => {
+    a.classList.toggle('highlighted', i < currentFlowStep);
+  });
+  document.getElementById('flowDetail').innerHTML = flowDetails[currentFlowStep];
+}
+
+function flowNext() { if (currentFlowStep < 8) { currentFlowStep++; updateFlow(); } }
+function flowPrev() { if (currentFlowStep > 0) { currentFlowStep--; updateFlow(); } }
+function flowReset() { currentFlowStep = 0; updateFlow(); }
+
+// ===== FLASHCARDS =====
+function initFlashcards() {
+  updateFlashcard();
+}
+
+function updateFlashcard() {
+  const fc = flashcards[currentFlashcard];
+  document.getElementById('flashFront').textContent = fc.q;
+  document.getElementById('flashBack').textContent = fc.a;
+  document.getElementById('flashCounter').textContent = `${currentFlashcard + 1} / ${flashcards.length}`;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+
+function flipFlashcard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+function nextFlashcard() { currentFlashcard = (currentFlashcard + 1) % flashcards.length; updateFlashcard(); }
+function prevFlashcard() { currentFlashcard = (currentFlashcard - 1 + flashcards.length) % flashcards.length; updateFlashcard(); }
+
+// ===== QUIZ =====
+let quizAnswered = 0;
+let quizCorrect = 0;
+
+function renderQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = quizData.map((q, qi) => `
+    <div class="quiz-card" id="quiz-${qi}">
+      <div class="quiz-question">${qi + 1}. ${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((opt, oi) => `
+          <div class="quiz-option" onclick="answerQuiz(${qi}, ${oi})">${opt}</div>
+        `).join('')}
+      </div>
+      <div class="quiz-explanation" id="quiz-exp-${qi}">${q.explain}</div>
+    </div>
+  `).join('');
+}
+
+function answerQuiz(qi, oi) {
+  const card = document.getElementById('quiz-' + qi);
+  if (card.classList.contains('answered')) return;
+  card.classList.add('answered');
+  const opts = card.querySelectorAll('.quiz-option');
+  opts.forEach(o => o.classList.add('disabled'));
+  const q = quizData[qi];
+
+  if (oi === q.correct) {
+    opts[oi].classList.add('correct');
+    quizCorrect++;
+  } else {
+    opts[oi].classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+  }
+
+  document.getElementById('quiz-exp-' + qi).classList.add('show');
+  quizAnswered++;
+
+  if (quizAnswered === quizData.length) {
+    const score = document.getElementById('quizScore');
+    score.style.display = 'block';
+    const pct = Math.round((quizCorrect / quizData.length) * 100);
+    score.innerHTML = `Score: ${quizCorrect}/${quizData.length} (${pct}%) ${pct >= 70 ? '-- Great job!' : '-- Review the sections above and try again.'}`;
+  }
+}
+
+// ===== SEARCH =====
+const searchableContent = {
+  overview: 'project readme tech stack setup payment flow sandbox test info api endpoints architecture',
+  bigpicture: 'big picture payment gateway middleman cashier analogy flow buyer seller merchant',
+  techstack: 'nodejs express sqlite better-sqlite3 axios dotenv cors environment variables middleware routes',
+  architecture: 'folder structure separation of concerns layered architecture request lifecycle route handler service database',
+  database: 'tables products orders payments order_items normalization state machine pending initiated completed cancelled failed refunded foreign key',
+  gateway: 'tokenized checkout tokens id_token paymentID trxID three step create authorize execute two-phase commit',
+  bkashapi: 'grant token create payment execute payment query refund api request response headers body callback idempotency merchantInvoiceNumber',
+  codewalkt: 'index.js bkashService.js payment.js callback redirect code walkthrough line by line',
+  security: 'credentials frontend sql injection cors pin otp pci dss idempotency double charge parameterized query',
+  errors: 'error handling timeout token expired cancel insufficient balance try catch next middleware centralized',
+  production: 'webhook callback postgresql redis token caching reconciliation https ssl ipn',
+  interview: 'interview questions answers flashcard explain payment gateway idempotency failures production token management sql injection',
+  quiz: 'quiz test self assessment score',
+};
+
+function handleSearch(query) {
+  const results = document.getElementById('searchResults');
+  if (!query.trim()) { results.classList.remove('show'); return; }
+  const q = query.toLowerCase();
+  const matches = Object.entries(searchableContent)
+    .filter(([, content]) => content.includes(q))
+    .map(([id]) => {
+      const nav = document.querySelector(`.nav-item[data-section="${id}"]`);
+      return { id, label: nav ? nav.textContent.trim() : id };
+    });
+
+  if (matches.length === 0) {
+    results.innerHTML = '<div class="search-result-item">No results found</div>';
+  } else {
+    results.innerHTML = matches.map(m =>
+      `<div class="search-result-item" onclick="showSection('${m.id}'); document.getElementById('searchResults').classList.remove('show'); document.getElementById('searchBox').value='';"><strong>${m.label}</strong></div>`
+    ).join('');
+  }
+  results.classList.add('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-box') && !e.target.closest('.search-results')) {
+    document.getElementById('searchResults').classList.remove('show');
+  }
+});
+
+// ===== SIDEBAR TOGGLE =====
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+// ===== MODE (learn vs review) =====
+function setMode(mode) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.querySelectorAll('.collapsible').forEach(c => {
+    if (mode === 'review') c.classList.remove('open');
+    else if (c.querySelector('.collapsible-header')) c.classList.add('open');
+  });
+}
+</script>
+</body>
+</html>
