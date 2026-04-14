@@ -1,5 +1,6 @@
-const axios = require('axios');
-const bkashConfig = require('../config/bkash');
+import axios from 'axios';
+import bkashConfig from '../config/bkash.js';
+import type { BkashTokenResponse, BkashCreatePaymentResponse, BkashExecuteResponse, BkashRefundResponse } from '../types/index.js';
 
 // ============================================================
 // TOKEN MANAGEMENT
@@ -7,11 +8,18 @@ const bkashConfig = require('../config/bkash');
 // The id_token is valid for 1 hour, refresh_token for 28 days.
 // ============================================================
 
-let tokenStore = {
+interface TokenStore {
+  id_token: string | null;
+  refresh_token: string | null;
+  token_type: string | null;
+  expires_at: number | null;
+}
+
+let tokenStore: TokenStore = {
   id_token: null,
   refresh_token: null,
   token_type: null,
-  expires_at: null, // timestamp when token expires
+  expires_at: null,
 };
 
 /**
@@ -19,13 +27,13 @@ let tokenStore = {
  * Authenticates with username/password + app credentials.
  * Returns id_token used as Authorization header in subsequent calls.
  */
-async function grantToken() {
+async function grantToken(): Promise<string> {
   // Return cached token if still valid (with 5-min buffer)
-  if (tokenStore.id_token && tokenStore.expires_at > Date.now() + 5 * 60 * 1000) {
+  if (tokenStore.id_token && tokenStore.expires_at && tokenStore.expires_at > Date.now() + 5 * 60 * 1000) {
     return tokenStore.id_token;
   }
 
-  const { data } = await axios.post(
+  const { data } = await axios.post<BkashTokenResponse>(
     `${bkashConfig.baseURL}/tokenized/checkout/token/grant`,
     {
       app_key: bkashConfig.appKey,
@@ -46,7 +54,7 @@ async function grantToken() {
       id_token: data.id_token,
       refresh_token: data.refresh_token,
       token_type: data.token_type,
-      expires_at: Date.now() + 55 * 60 * 1000, // 55 minutes (token valid for 1 hour)
+      expires_at: Date.now() + 55 * 60 * 1000,
     };
     return data.id_token;
   }
@@ -56,14 +64,13 @@ async function grantToken() {
 
 /**
  * Refresh Token - Refreshes an expired id_token using the refresh_token.
- * Refresh token is valid for 28 days.
  */
-async function refreshToken() {
+async function refreshToken(): Promise<string> {
   if (!tokenStore.refresh_token) {
-    return grantToken(); // No refresh token, get a new one
+    return grantToken();
   }
 
-  const { data } = await axios.post(
+  const { data } = await axios.post<BkashTokenResponse>(
     `${bkashConfig.baseURL}/tokenized/checkout/token/refresh`,
     {
       app_key: bkashConfig.appKey,
@@ -90,18 +97,17 @@ async function refreshToken() {
     return data.id_token;
   }
 
-  // If refresh fails, try a fresh grant
   return grantToken();
 }
 
 /**
  * Helper to get a valid token (grant or refresh as needed)
  */
-async function getToken() {
+async function getToken(): Promise<string> {
   if (!tokenStore.id_token) {
     return grantToken();
   }
-  if (tokenStore.expires_at <= Date.now() + 5 * 60 * 1000) {
+  if (!tokenStore.expires_at || tokenStore.expires_at <= Date.now() + 5 * 60 * 1000) {
     return refreshToken();
   }
   return tokenStore.id_token;
@@ -111,22 +117,14 @@ async function getToken() {
 // PAYMENT OPERATIONS
 // ============================================================
 
-/**
- * Create Payment - Initiates a bKash payment.
- * Returns a bkashURL where the user must be redirected to authorize payment.
- *
- * @param {number} amount - Payment amount in BDT
- * @param {string} invoiceNumber - Unique invoice (used for idempotency)
- * @returns {object} { paymentID, bkashURL, ... }
- */
-async function createPayment(amount, invoiceNumber) {
+async function createPayment(amount: number, invoiceNumber: string): Promise<BkashCreatePaymentResponse> {
   const id_token = await getToken();
 
-  const { data } = await axios.post(
+  const { data } = await axios.post<BkashCreatePaymentResponse>(
     `${bkashConfig.baseURL}/tokenized/checkout/create`,
     {
-      mode: '0011', // Checkout URL mode
-      payerReference: ' ', // Space = no agreement
+      mode: '0011',
+      payerReference: ' ',
       callbackURL: bkashConfig.callbackURL,
       amount: amount.toString(),
       currency: 'BDT',
@@ -150,17 +148,10 @@ async function createPayment(amount, invoiceNumber) {
   throw new Error(`Create payment failed: ${data.statusMessage || JSON.stringify(data)}`);
 }
 
-/**
- * Execute Payment - Finalizes payment after user authorization.
- * Called when bKash redirects back to our callback URL with status=success.
- *
- * @param {string} paymentID - The paymentID from createPayment
- * @returns {object} { trxID, paymentID, status, ... }
- */
-async function executePayment(paymentID) {
+async function executePayment(paymentID: string): Promise<BkashExecuteResponse> {
   const id_token = await getToken();
 
-  const { data } = await axios.post(
+  const { data } = await axios.post<BkashExecuteResponse>(
     `${bkashConfig.baseURL}/tokenized/checkout/execute`,
     { paymentID },
     {
@@ -176,17 +167,10 @@ async function executePayment(paymentID) {
   return data;
 }
 
-/**
- * Query Payment - Check the current status of a payment.
- * Useful for reconciliation or verifying payment state.
- *
- * @param {string} paymentID - The paymentID to query
- * @returns {object} Payment status details
- */
-async function queryPayment(paymentID) {
+async function queryPayment(paymentID: string): Promise<BkashExecuteResponse> {
   const id_token = await getToken();
 
-  const { data } = await axios.post(
+  const { data } = await axios.post<BkashExecuteResponse>(
     `${bkashConfig.baseURL}/tokenized/checkout/payment/status`,
     { paymentID },
     {
@@ -202,19 +186,15 @@ async function queryPayment(paymentID) {
   return data;
 }
 
-/**
- * Refund Payment - Refund a completed payment (full or partial).
- *
- * @param {string} paymentID - Original payment ID
- * @param {string} trxID - Transaction ID from execute
- * @param {number} amount - Amount to refund
- * @param {string} reason - Reason for refund
- * @returns {object} Refund result
- */
-async function refundPayment(paymentID, trxID, amount, reason = 'Customer request') {
+async function refundPayment(
+  paymentID: string,
+  trxID: string,
+  amount: number,
+  reason: string = 'Customer request'
+): Promise<BkashRefundResponse> {
   const id_token = await getToken();
 
-  const { data } = await axios.post(
+  const { data } = await axios.post<BkashRefundResponse>(
     `${bkashConfig.baseURL}/tokenized/checkout/payment/refund`,
     {
       paymentID,
@@ -236,7 +216,7 @@ async function refundPayment(paymentID, trxID, amount, reason = 'Customer reques
   return data;
 }
 
-module.exports = {
+export {
   grantToken,
   refreshToken,
   createPayment,

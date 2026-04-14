@@ -1,7 +1,8 @@
-const express = require('express');
-const { db } = require('../db/database');
+import { Router } from 'express';
+import { db } from '../db/database.js';
+import type { OrderWithPayment, OrderDetail, OrderItem } from '../types/index.js';
 
-const router = express.Router();
+const router = Router();
 
 // GET /api/orders - List all orders with payment info
 router.get('/', (req, res) => {
@@ -10,7 +11,7 @@ router.get('/', (req, res) => {
     FROM orders o
     LEFT JOIN payments p ON o.id = p.order_id
     ORDER BY o.created_at DESC
-  `).all();
+  `).all() as OrderWithPayment[];
   res.json(orders);
 });
 
@@ -21,10 +22,11 @@ router.get('/:id', (req, res) => {
     FROM orders o
     LEFT JOIN payments p ON o.id = p.order_id
     WHERE o.id = ?
-  `).get(req.params.id);
+  `).get(req.params.id) as OrderWithPayment | undefined;
 
   if (!order) {
-    return res.status(404).json({ error: 'Order not found' });
+    res.status(404).json({ error: 'Order not found' });
+    return;
   }
 
   const items = db.prepare(`
@@ -32,9 +34,10 @@ router.get('/:id', (req, res) => {
     FROM order_items oi
     JOIN products pr ON oi.product_id = pr.id
     WHERE oi.order_id = ?
-  `).all(req.params.id);
+  `).all(req.params.id) as (OrderItem & { product_name: string })[];
 
-  res.json({ ...order, items });
+  const detail: OrderDetail = { ...order, items };
+  res.json(detail);
 });
 
-module.exports = router;
+export default router;
