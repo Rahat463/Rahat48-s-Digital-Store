@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { getProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
+import SearchBar from '../components/SearchBar';
+import ProductQA from '../components/ProductQA';
 
 const styles = {
   heading: {
@@ -43,10 +45,15 @@ export default function Home({ addToCart }) {
   return (
     <div>
       <h1 style={styles.heading}>Digital Products</h1>
+      <SearchBar />
       <div style={styles.grid}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} onAdd={addToCart} />
         ))}
+      </div>
+
+      <div style={{ marginTop: '40px' }}>
+        <ProductQA />
       </div>
     </div>
   );
