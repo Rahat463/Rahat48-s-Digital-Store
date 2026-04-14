@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { CreateReviewSchema, UpdateReviewSchema, type CreateReviewInput, type UpdateReviewInput } from '../schemas/review.js';
 import type { Review, ReviewWithUser } from '../types/index.js';
+import { upsertProduct } from '../services/embeddingService.js';
 
 const router = Router({ mergeParams: true });
 
@@ -62,6 +63,10 @@ router.post('/', authenticate, validate(CreateReviewSchema), async (req: Request
     ).run(productId, userId, rating, title || null, body);
 
     const review = db.prepare('SELECT * FROM reviews WHERE id = ?').get(result.lastInsertRowid) as Review;
+
+    // Re-embed product with new review context
+    upsertProduct(productId).catch(() => {});
+
     res.status(201).json(review);
   } catch (err) {
     next(err);
@@ -93,6 +98,10 @@ router.put('/:id', authenticate, validate(UpdateReviewSchema), async (req: Reque
     `).run(updates.rating ?? null, updates.title ?? null, updates.body ?? null, req.params.id);
 
     const updated = db.prepare('SELECT * FROM reviews WHERE id = ?').get(req.params.id) as Review;
+
+    // Re-embed product with updated review
+    upsertProduct(review.product_id).catch(() => {});
+
     res.json(updated);
   } catch (err) {
     next(err);
@@ -115,6 +124,10 @@ router.delete('/:id', authenticate, async (req: Request, res: Response, next: Ne
     }
 
     db.prepare('DELETE FROM reviews WHERE id = ?').run(req.params.id);
+
+    // Re-embed product without deleted review
+    upsertProduct(review.product_id).catch(() => {});
+
     res.json({ message: 'Review deleted' });
   } catch (err) {
     next(err);

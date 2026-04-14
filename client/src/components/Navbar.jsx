@@ -42,6 +42,7 @@ export default function Navbar({ cartCount }) {
       <Link to="/" style={styles.logo}>Rahat48's Digital Store</Link>
       <div style={styles.links}>
         <Link to="/" style={styles.link}>Products</Link>
+        <Link to="/search" style={styles.link}>Search</Link>
         <Link to="/orders" style={styles.link}>Orders</Link>
         <Link to="/cart" style={styles.link}>
           Cart
