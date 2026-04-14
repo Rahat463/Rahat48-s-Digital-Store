@@ -57,6 +57,9 @@ export interface Review {
   rating: number;
   title: string | null;
   body: string;
+  sentiment: string | null;
+  sentiment_score: number | null;
+  key_themes: string | null;
   created_at: string;
 }
 

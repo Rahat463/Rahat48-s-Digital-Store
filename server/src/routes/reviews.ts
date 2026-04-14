@@ -6,6 +6,7 @@ import { validate } from '../middleware/validate.js';
 import { CreateReviewSchema, UpdateReviewSchema, type CreateReviewInput, type UpdateReviewInput } from '../schemas/review.js';
 import type { Review, ReviewWithUser } from '../types/index.js';
 import { upsertProduct } from '../services/embeddingService.js';
+import { analyzeReviewSentiment } from '../services/sentimentService.js';
 
 const router = Router({ mergeParams: true });
 
@@ -66,6 +67,9 @@ router.post('/', authenticate, validate(CreateReviewSchema), async (req: Request
 
     // Re-embed product with new review context
     upsertProduct(productId).catch(() => {});
+
+    // Analyze sentiment in background
+    analyzeReviewSentiment(review.id, body, title).catch(() => {});
 
     res.status(201).json(review);
   } catch (err) {

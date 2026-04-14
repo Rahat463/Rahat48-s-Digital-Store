@@ -7,6 +7,7 @@ import PaymentStatus from './pages/PaymentStatus';
 import Orders from './pages/Orders';
 import SearchResults from './pages/SearchResults';
 import ChatWidget from './components/ChatWidget';
+import Analytics from './pages/Analytics';
 
 export default function App() {
   const [cart, setCart] = useState([]);
@@ -53,6 +54,7 @@ export default function App() {
           <Route path="/search" element={<SearchResults addToCart={addToCart} />} />
           <Route path="/payment-status" element={<PaymentStatus />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </div>
     </>

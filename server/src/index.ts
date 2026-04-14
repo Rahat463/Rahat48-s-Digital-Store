@@ -11,6 +11,9 @@ import reviewRoutes from './routes/reviews.js';
 import searchRoutes from './routes/search.js';
 import askRoutes from './routes/ask.js';
 import chatRoutes from './routes/chat.js';
+import recommendationRoutes from './routes/recommendations.js';
+import adminRoutes from './routes/admin.js';
+import analyticsRoutes from './routes/analytics.js';
 import errorHandler from './middleware/errorHandler.js';
 import { indexAllProducts } from './services/embeddingService.js';
 
@@ -33,6 +36,9 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/products/ask', askRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

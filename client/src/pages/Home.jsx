@@ -3,6 +3,7 @@ import { getProducts } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import ProductQA from '../components/ProductQA';
+import RecommendationCarousel from '../components/RecommendationCarousel';
 
 const styles = {
   heading: {
@@ -46,6 +47,7 @@ export default function Home({ addToCart }) {
     <div>
       <h1 style={styles.heading}>Digital Products</h1>
       <SearchBar />
+      <RecommendationCarousel addToCart={addToCart} />
       <div style={styles.grid}>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} onAdd={addToCart} />
