@@ -1,2 +1,14 @@
 LEARNING_GUIDE.md
 study-guide.html
+learning-lab/
+
+# Database
+server/store.db
+server/store.db-shm
+server/store.db-wal
+
+# Dependencies
+node_modules/
+
+# Build output
+server/dist/
