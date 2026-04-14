@@ -10,6 +10,7 @@ import paymentRoutes from './routes/payment.js';
 import reviewRoutes from './routes/reviews.js';
 import searchRoutes from './routes/search.js';
 import askRoutes from './routes/ask.js';
+import chatRoutes from './routes/chat.js';
 import errorHandler from './middleware/errorHandler.js';
 import { indexAllProducts } from './services/embeddingService.js';
 
@@ -31,6 +32,7 @@ app.use('/api/products/:productId/reviews', reviewRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/products/ask', askRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

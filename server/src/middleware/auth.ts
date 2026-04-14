@@ -29,6 +29,22 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   }
 }
 
+/**
+ * Optional auth — attaches user if a valid token is present, but doesn't block.
+ * Used by endpoints that work for both authenticated and anonymous users.
+ */
+export function optionalAuth(req: Request, _res: Response, next: NextFunction): void {
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      req.user = verifyToken(authHeader.split(' ')[1]);
+    } catch {
+      // Invalid token — proceed as anonymous
+    }
+  }
+  next();
+}
+
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   if (!req.user || req.user.role !== 'admin') {
     res.status(403).json({ error: 'Admin access required' });

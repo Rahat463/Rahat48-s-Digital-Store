@@ -6,6 +6,7 @@ import Cart from './pages/Cart';
 import PaymentStatus from './pages/PaymentStatus';
 import Orders from './pages/Orders';
 import SearchResults from './pages/SearchResults';
+import ChatWidget from './components/ChatWidget';
 
 export default function App() {
   const [cart, setCart] = useState([]);
@@ -35,6 +36,7 @@ export default function App() {
   return (
     <>
       <Navbar cartCount={cart.reduce((sum, item) => sum + item.quantity, 0)} />
+      <ChatWidget />
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px' }}>
         <Routes>
           <Route path="/" element={<Home addToCart={addToCart} />} />
