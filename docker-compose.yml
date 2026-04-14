@@ -8,5 +8,23 @@ services:
     environment:
       - ANONYMIZED_TELEMETRY=FALSE
 
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file: ./server/.env
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - chromadb
+
+  client:
+    build: ./client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
 volumes:
   chroma-data:

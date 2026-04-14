@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import config from './config/index.js';
 import { initDB } from './db/database.js';
 import authRoutes from './routes/auth.js';
@@ -19,23 +21,30 @@ import { indexAllProducts } from './services/embeddingService.js';
 
 const app = express();
 
-// Middleware
+// Security & Middleware
+app.use(helmet());
 app.use(cors({ origin: config.CLIENT_URL }));
 app.use(express.json());
+
+// Rate limiting
+const generalLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 100 });
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20 });
+const aiLimiter = rateLimit({ windowMs: 60 * 1000, limit: 10 });
+app.use('/api/', generalLimiter);
 
 // Initialize database
 initDB();
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/products/:productId/reviews', reviewRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/products/ask', askRoutes);
-app.use('/api/chat', chatRoutes);
+app.use('/api/products/ask', aiLimiter, askRoutes);
+app.use('/api/chat', aiLimiter, chatRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/analytics', analyticsRoutes);
