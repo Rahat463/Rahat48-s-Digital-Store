@@ -79,6 +79,14 @@ function initDB(): void {
     db.exec('ALTER TABLE orders ADD COLUMN user_id INTEGER REFERENCES users(id)');
   }
 
+  // Add sentiment columns to reviews if they don't exist
+  const reviewColumns = db.prepare("PRAGMA table_info(reviews)").all() as { name: string }[];
+  if (!reviewColumns.some(col => col.name === 'sentiment')) {
+    db.exec("ALTER TABLE reviews ADD COLUMN sentiment TEXT DEFAULT NULL");
+    db.exec("ALTER TABLE reviews ADD COLUMN sentiment_score REAL DEFAULT NULL");
+    db.exec("ALTER TABLE reviews ADD COLUMN key_themes TEXT DEFAULT NULL");
+  }
+
   // Seed products if table is empty
   const count = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
   if (count.count === 0) {

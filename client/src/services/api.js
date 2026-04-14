@@ -28,6 +28,14 @@ export function refundPayment(orderId, reason) {
   return api.post(`/payment/refund/${orderId}`, { reason }).then((res) => res.data);
 }
 
+export function getRecommendations() {
+  return api.get('/recommendations').then((res) => res.data);
+}
+
+export function getAnalytics() {
+  return api.get('/analytics/overview').then((res) => res.data);
+}
+
 export function searchProducts(query, limit = 5) {
   return api.get('/search', { params: { q: query, limit } }).then((res) => res.data);
 }

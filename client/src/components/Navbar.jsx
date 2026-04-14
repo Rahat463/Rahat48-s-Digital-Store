@@ -44,6 +44,7 @@ export default function Navbar({ cartCount }) {
         <Link to="/" style={styles.link}>Products</Link>
         <Link to="/search" style={styles.link}>Search</Link>
         <Link to="/orders" style={styles.link}>Orders</Link>
+        <Link to="/analytics" style={styles.link}>Analytics</Link>
         <Link to="/cart" style={styles.link}>
           Cart
           {cartCount > 0 && <span style={styles.badge}>{cartCount}</span>}
